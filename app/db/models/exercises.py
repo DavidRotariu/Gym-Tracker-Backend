@@ -16,5 +16,6 @@ class Exercise(Base):
 
     muscle_id = Column(UUID(as_uuid=True), ForeignKey("muscles.id"), nullable=False)
 
-    # 🚨 FIX: Use "Muscle" as a string
+    # ✅ Relationships
     muscle = relationship("Muscle", back_populates="exercises")
+    # workouts = relationship("Workout", back_populates="exercise")

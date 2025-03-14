@@ -11,5 +11,5 @@ class Muscle(Base):
     name = Column(String, unique=True, nullable=False)
     pic = Column(String, nullable=True)
 
-    # 🚨 FIX: Use "Exercise" as a string to delay evaluation
+    # ✅ Relationship with Exercise
     exercises = relationship("Exercise", back_populates="muscle", cascade="all, delete-orphan")

@@ -12,6 +12,13 @@ Base = declarative_base()
 # ORM Session
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# ✅ Import models to ensure tables are created
+from app.db.models.muscles import Muscle
+from app.db.models.exercises import Exercise
+
+# ✅ Create tables in the database
+Base.metadata.create_all(bind=engine)
+
 # ✅ Fix: Add session_scope to manage database transactions
 @contextmanager
 def session_scope():

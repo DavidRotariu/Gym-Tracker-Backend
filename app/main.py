@@ -1,9 +1,12 @@
 from fastapi import FastAPI
-from app.api.routers.muscles import muscles_router  # ✅ Ensure correct import
+from app.api.routers.muscles import muscles_router
+from app.api.routers.exercises import exercises_router  # ✅ Import Exercise Router
 
 app = FastAPI()
 
-app.include_router(muscles_router)  # ✅ Ensure this is included
+# ✅ Register Routers
+app.include_router(muscles_router)
+app.include_router(exercises_router)
 
 @app.get("/")
 def root():
