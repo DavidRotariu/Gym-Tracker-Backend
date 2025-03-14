@@ -18,4 +18,4 @@ class Exercise(Base):
 
     # ✅ Relationships
     muscle = relationship("Muscle", back_populates="exercises")
-    # workouts = relationship("Workout", back_populates="exercise")
+    workouts = relationship("Workout", back_populates="exercise", cascade="all, delete-orphan")
