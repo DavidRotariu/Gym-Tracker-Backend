@@ -13,3 +13,4 @@ class Muscle(Base):
 
     # ✅ Relationship with Exercise
     exercises = relationship("Exercise", back_populates="muscle", cascade="all, delete-orphan")
+    splits = relationship("SplitMuscle", back_populates="muscle", cascade="all, delete-orphan")

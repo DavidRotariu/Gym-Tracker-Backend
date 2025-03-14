@@ -15,6 +15,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # ✅ Import models to ensure tables are created
 from app.db.models.muscles import Muscle
 from app.db.models.exercises import Exercise
+from app.db.models.splits import Split
+from app.db.models.split_muscle import SplitMuscle
 
 # ✅ Create tables in the database
 Base.metadata.create_all(bind=engine)
