@@ -19,3 +19,4 @@ class Exercise(Base):
     # ✅ Relationships
     muscle = relationship("Muscle", back_populates="exercises")
     workouts = relationship("Workout", back_populates="exercise", cascade="all, delete-orphan")
+    secondary_muscles = relationship("ExerciseSecondaryMuscle", back_populates="exercise", cascade="all, delete-orphan")

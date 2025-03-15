@@ -1,17 +1,20 @@
+from typing import List
 from uuid import uuid4
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import session_scope
+from app.db.models import Muscle
 from app.db.models.exercises import Exercise
-from app.api.schemas.exercises import ExerciseCreate, ExerciseResponse
+from app.api.schemas.exercises import ExerciseCreate, ExerciseResponse, ExerciseSecondaryMuscleResponse
 
 exercises_router = APIRouter(tags=["Exercises"])
 
-@exercises_router.get("/exercises", response_model=list[ExerciseResponse])
+@exercises_router.get("/exercises", response_model=List[ExerciseResponse])
 def get_exercises():
-    """Fetch all exercises"""
+    """Fetch all exercises with primary and secondary muscles"""
     with session_scope() as session:
         exercises = session.query(Exercise).all()
+
         return [
             ExerciseResponse(
                 id=exercise.id,
@@ -20,9 +23,20 @@ def get_exercises():
                 tips=exercise.tips,
                 equipment=exercise.equipment,
                 favourite=exercise.favourite,
-                muscle_id=exercise.muscle_id
+                primary_muscle=ExerciseSecondaryMuscleResponse(
+                    muscle_id=exercise.muscle_id,
+                    name=session.query(Muscle.name).filter(Muscle.id == exercise.muscle_id).scalar()
+                ),
+                secondary_muscles=[
+                    ExerciseSecondaryMuscleResponse(
+                        muscle_id=sm.muscle_id,
+                        name=session.query(Muscle.name).filter(Muscle.id == sm.muscle_id).scalar()
+                    )
+                    for sm in exercise.secondary_muscles
+                ]
             ) for exercise in exercises
         ]
+
 
 @exercises_router.post("/exercises", response_model=ExerciseResponse, status_code=201)
 def create_exercise(data: ExerciseCreate):

@@ -7,16 +7,19 @@ from app.api.schemas.muscles import MuscleCreate, MuscleResponse
 
 muscles_router = APIRouter(tags=["Muscles"])
 
-@muscles_router.get("/muscles")
+@muscles_router.get("/muscles", response_model=list[MuscleResponse])
 def get_muscles():
-    """Fetch all muscles"""
-    try:
-        with session_scope() as session:
-            muscles = session.query(Muscle).all()
-            return [{"id": str(muscle.id), "name": muscle.name, "pic": muscle.pic} for muscle in muscles]
-    except Exception as e:
-        print("Error:", str(e))  # Debugging line
-        raise HTTPException(status_code=500, detail="Database error")
+    """Fetch all muscles with image URLs"""
+    with session_scope() as session:
+        muscles = session.query(Muscle).all()
+
+        return [
+            MuscleResponse(
+                id=muscle.id,
+                name=muscle.name,
+                pic=f"http://127.0.0.1:8000/uploads/muscles/{muscle.pic}" if muscle.pic else None
+            ) for muscle in muscles
+        ]
 
 @muscles_router.post("/muscles", response_model=MuscleResponse, status_code=201)
 def create_muscle(data: MuscleCreate):

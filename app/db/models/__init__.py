@@ -6,3 +6,4 @@ from app.db.models.workouts import Workout
 from app.db.models.workout_sessions import WorkoutSession
 from app.db.models.workout_session_muscle import WorkoutSessionMuscle 
 from app.db.models.users import User
+from app.db.models.exercise_secondary_muscles import ExerciseSecondaryMuscle
