@@ -18,7 +18,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000",
                    "https://gym-tracker-hempvie8u-davidrotarius-projects.vercel.app",
-                   "https://gym-tracker-topaz.vercel.app/"],  # Allow only your frontend domain
+                   "https://gym-tracker-topaz.vercel.app"],  # Allow only your frontend domain
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
