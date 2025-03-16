@@ -1,19 +1,15 @@
 from uuid import UUID
-from typing import Optional, List
+from typing import List, Optional
 from pydantic import BaseModel
 
 class ExerciseCreate(BaseModel):
     name: str
-    pic: Optional[str] = None
-    tips: Optional[str] = None
-    equipment: Optional[str] = None
-    favourite: Optional[bool] = False
-    muscle_id: UUID
-    secondary_muscles: Optional[List[UUID]]
-
-class ExerciseSecondaryMuscleResponse(BaseModel):
-    muscle_id: UUID
-    name: str
+    pic: Optional[str]
+    tips: Optional[str]
+    equipment: Optional[str]
+    favourite: bool = False
+    muscle_id: UUID  # ✅ Primary muscle
+    secondary_muscles: List[UUID] = []  # ✅ List of secondary muscle IDs
 
 class ExerciseResponse(BaseModel):
     id: UUID
@@ -22,5 +18,13 @@ class ExerciseResponse(BaseModel):
     tips: Optional[str]
     equipment: Optional[str]
     favourite: bool
-    primary_muscle: ExerciseSecondaryMuscleResponse
-    secondary_muscles: List[ExerciseSecondaryMuscleResponse]  # ✅ Returns full muscle details
+    primary_muscle: str  # ✅ Returns primary muscle name
+    secondary_muscles: List[str]  # ✅ Returns secondary muscle names
+
+class ExerciseBulkCreate(BaseModel):
+    exercises: List[ExerciseCreate]  # ✅ Accepts a list of exercises
+
+class ExerciseSecondaryMuscleResponse(BaseModel):
+    muscle_id: UUID
+    name: str
+

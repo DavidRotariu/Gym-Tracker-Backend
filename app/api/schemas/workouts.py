@@ -4,9 +4,9 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class WorkoutCreate(BaseModel):
-    exercise_id: UUID
-    reps: Optional[List[int]] = None
-    weights: Optional[List[int]] = None
+    exercise_id: UUID  # ✅ Logs which exercise was performed
+    reps: List[int]  # ✅ List of reps for each set
+    weights: List[float]  # ✅ List of weights corresponding to reps
 
 class WorkoutResponse(BaseModel):
     id: UUID

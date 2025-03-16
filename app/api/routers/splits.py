@@ -26,6 +26,7 @@ def get_current_user(authorization: str = Header(None)):
 
 @splits_router.get("/splits", response_model=List[SplitResponse])
 def get_splits(current_user=Depends(get_current_user)):
+    """Fetch all splits for an authenticated user"""
     with session_scope() as session:
         db_user = session.query(User).filter_by(auth_id=current_user.id).first()
         if not db_user:
@@ -46,14 +47,12 @@ def get_splits(current_user=Depends(get_current_user)):
                 ),  # ✅ Returns muscle names as "Chest / Shoulders / Triceps"
                 muscles=[
                     SplitMuscleResponse(
-                        muscle=MuscleResponse(
-                            id=muscle.id,
-                            name=muscle.name,
-                            pic=f"http://127.0.0.1:8000/uploads/muscles/{muscle.pic}" if muscle.pic else None
-                        ),
+                        id=muscle.id,  # ✅ Directly return muscle ID
+                        name=muscle.name,
+                        pic=f"http://127.0.0.1:8000/uploads/muscles/{muscle.pic}" if muscle.pic else None,
                         nr_of_exercises=sm.nr_of_exercises
                     )
-                    for sm in split.muscles
+                    for sm in session.query(SplitMuscle).filter(SplitMuscle.split_id == split.id).all()
                     for muscle in session.query(Muscle).filter(Muscle.id == sm.muscle_id).all()
                 ]
             ) for split in splits

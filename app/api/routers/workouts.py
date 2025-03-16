@@ -1,12 +1,46 @@
 from uuid import uuid4
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
+
+from app.api.routers.splits import get_current_user
 from app.db.database import session_scope
+from app.db.models.users import User
 from app.db.models.workouts import Workout
 from app.db.models.exercises import Exercise
 from app.api.schemas.workouts import WorkoutCreate, WorkoutResponse
 
 workouts_router = APIRouter(tags=["Workouts"])
+
+@workouts_router.post("/log-workout", status_code=201)
+def log_workout(data: WorkoutCreate, current_user=Depends(get_current_user)):
+    """Log a workout for the authenticated user"""
+    with session_scope() as session:
+        # ✅ Get authenticated user (fetching only necessary fields)
+        db_user = session.query(User.id).filter_by(auth_id=current_user.id).scalar()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # ✅ Check if exercise exists
+        exercise_exists = session.query(Exercise.id).filter(Exercise.id == data.exercise_id).scalar()
+        if not exercise_exists:
+            raise HTTPException(status_code=404, detail="Exercise not found")
+
+        # ✅ Ensure `reps` and `weights` are the same length
+        if len(data.reps) != len(data.weights):
+            raise HTTPException(status_code=400, detail="Reps and weights lists must be the same length")
+
+        # ✅ Log the workout
+        new_workout = Workout(
+            id=uuid4(),
+            user_id=db_user,  # ✅ Using scalar result (UUID only, avoids detached instance error)
+            exercise_id=data.exercise_id,
+            reps=data.reps,
+            weights=data.weights
+        )
+        session.add(new_workout)
+        session.commit()
+
+        return {"message": "Workout logged successfully", "workout_id": new_workout.id}
 
 @workouts_router.get("/workouts", response_model=list[WorkoutResponse])
 def get_workouts():

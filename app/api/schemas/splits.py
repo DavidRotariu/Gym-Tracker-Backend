@@ -19,7 +19,7 @@ class SplitMuscleResponse(BaseModel):
 
 class SplitCreate(BaseModel):
     name: str
-    pic: Optional[str]
+    pic: Optional[str] = ""
     muscles: List[SplitMuscleCreate]  # ✅ Ensure request accepts `muscle_id`
 
 class SplitResponse(BaseModel):

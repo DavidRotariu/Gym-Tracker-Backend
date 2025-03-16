@@ -13,4 +13,5 @@ class User(Base):
     name = Column(String, nullable=True)
 
     workout_sessions = relationship("WorkoutSession", back_populates="user")
+    workouts = relationship("Workout", back_populates="user", cascade="all, delete-orphan")
     splits = relationship("Split", back_populates="user", cascade="all, delete-orphan")
