@@ -10,23 +10,8 @@ psycopg2
 # Environment variable management
 python-dotenv
 
-# Background task scheduling
-apscheduler
-
-# Authentication
-passlib[bcrypt]
-
-# UUID generation
-uuid
-
-# Email handling
-smtplib
-
 # Type validation and serialization
 pydantic
-
-# Pagination utilities for FastAPI
-fastapi-pagination
 
 # HTTP requests handling
 requests
