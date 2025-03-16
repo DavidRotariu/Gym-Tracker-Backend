@@ -15,3 +15,5 @@ pydantic
 
 # HTTP requests handling
 requests
+
+uvicorn
