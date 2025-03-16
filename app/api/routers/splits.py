@@ -49,7 +49,7 @@ def get_splits(current_user=Depends(get_current_user)):
                     SplitMuscleResponse(
                         id=muscle.id,  # ✅ Directly return muscle ID
                         name=muscle.name,
-                        pic=f"http://127.0.0.1:8000/uploads/muscles/{muscle.pic}" if muscle.pic else None,
+                        pic=f"/uploads/muscles/{muscle.pic}" if muscle.pic else None,
                         nr_of_exercises=sm.nr_of_exercises
                     )
                     for sm in session.query(SplitMuscle).filter(SplitMuscle.split_id == split.id).all()

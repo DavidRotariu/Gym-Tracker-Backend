@@ -17,7 +17,7 @@ def get_muscles():
             MuscleResponse(
                 id=muscle.id,
                 name=muscle.name,
-                pic=f"http://127.0.0.1:8000/uploads/muscles/{muscle.pic}" if muscle.pic else None
+                pic=f"/uploads/muscles/{muscle.pic}" if muscle.pic else None
             ) for muscle in muscles
         ]
 

@@ -21,7 +21,7 @@ def get_exercises():
             ExerciseResponse(
                 id=exercise.id,
                 name=exercise.name,
-                pic=f"http://127.0.0.1:8000/uploads/exercises/{exercise.pic}" if exercise.pic else None,
+                pic=f"/uploads/exercises/{exercise.pic}" if exercise.pic else None,
                 tips=exercise.tips,
                 equipment=exercise.equipment,
                 favourite=exercise.favourite,
@@ -51,7 +51,7 @@ def get_exercises_by_primary_muscle(muscle_id: UUID):
             ExerciseResponse(
                 id=exercise.id,
                 name=exercise.name,
-                pic=f"http://127.0.0.1:8000/uploads/exercises/{exercise.pic}" if exercise.pic else None,
+                pic=f"/uploads/exercises/{exercise.pic}" if exercise.pic else None,
                 tips=exercise.tips,
                 equipment=exercise.equipment,
                 favourite=exercise.favourite,
