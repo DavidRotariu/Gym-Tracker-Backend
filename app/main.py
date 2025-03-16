@@ -35,5 +35,5 @@ app.include_router(auth_router)
 app.include_router(users_router)
 
 @app.get("/")
-def root():
-    return {"message": "FastAPI is working!"}
+def health_check():
+    return {"status": "ok"}
