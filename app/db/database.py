@@ -6,6 +6,12 @@ from contextlib import contextmanager
 DATABASE_URL = "postgresql://postgres:David.j.r.3@db.iqkwhjgqohvsxfzzkokd.supabase.co:5432/postgres"
 engine = create_engine(DATABASE_URL)
 
+try:
+    with engine.connect() as conn:
+        print("✅ Database connection successful!")
+except Exception as e:
+    print("❌ Database connection failed:", e)
+
 # Base Model
 Base = declarative_base()
 
