@@ -11,6 +11,6 @@ class WorkoutCreate(BaseModel):
 class WorkoutResponse(BaseModel):
     id: UUID
     exercise_id: UUID
-    reps: Optional[List[int]]
-    weights: Optional[List[int]]
+    reps: Optional[List[float]]
+    weights: Optional[List[float]]
     date: datetime

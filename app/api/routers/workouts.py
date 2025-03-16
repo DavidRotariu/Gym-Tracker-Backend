@@ -1,6 +1,8 @@
 from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy import UUID, String, cast
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 
 from app.api.routers.splits import get_current_user
 from app.db.database import session_scope
@@ -10,6 +12,48 @@ from app.db.models.exercises import Exercise
 from app.api.schemas.workouts import WorkoutCreate, WorkoutResponse
 
 workouts_router = APIRouter(tags=["Workouts"])
+
+@workouts_router.get("/workouts/last-three", response_model=list[WorkoutResponse])
+def get_all_workouts_for_exercise(exercise_id: str, current_user=Depends(get_current_user)):
+    """Fetch all workouts for a specific exercise by the authenticated user"""
+    with session_scope() as session:
+        # Convert exercise_id to UUID
+        try:
+            exercise_uuid = str(UUID(exercise_id))  # Ensure it's a string UUID
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid exercise_id format")
+
+        # Get user ID as a string
+        db_user = session.query(User.id).filter_by(auth_id=current_user.id).scalar()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        db_user_id = str(db_user)  # Convert user_id to string
+
+        # Fetch all workouts, ordered by date (latest first)
+        workouts = (
+            session.query(Workout)
+            .filter(Workout.user_id == db_user_id)
+            .filter(cast(Workout.exercise_id, String) == exercise_id)
+            .order_by(desc(Workout.date))
+            .limit(3)
+            .all()
+        )
+
+        # if not workouts:
+        #     raise HTTPException(status_code=404, detail="No workouts found for this exercise")
+
+        return [
+            WorkoutResponse(
+                id=workout.id,
+                exercise_id=workout.exercise_id,
+                reps=workout.reps,
+                weights=workout.weights,
+                date=workout.date
+            )
+            for workout in workouts
+        ]
+
 
 @workouts_router.post("/log-workout", status_code=201)
 def log_workout(data: WorkoutCreate, current_user=Depends(get_current_user)):
