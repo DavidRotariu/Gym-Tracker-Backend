@@ -19,3 +19,5 @@ requests
 uvicorn
 
 supabase
+
+python-multipart
