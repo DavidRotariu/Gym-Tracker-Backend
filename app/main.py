@@ -16,7 +16,9 @@ app = FastAPI()
 # Allow CORS for all origins, methods, and headers (Change for production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://ultimate-tamma-davidrotariu-3776694a.koyeb.app"],  # Allow only your frontend domain
+    allow_origins=["http://localhost:3000",
+                   "https://gym-tracker-hempvie8u-davidrotarius-projects.vercel.app",
+                   "https://gym-tracker-topaz.vercel.app/"],  # Allow only your frontend domain
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
