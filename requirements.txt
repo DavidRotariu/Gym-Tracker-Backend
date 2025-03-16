@@ -17,3 +17,5 @@ pydantic
 requests
 
 uvicorn
+
+supabase
