@@ -1,6 +1,8 @@
+from datetime import datetime, date, timezone
+from typing import List
 from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy import UUID, String, cast
+from sqlalchemy import UUID, String, cast, func
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
@@ -12,6 +14,45 @@ from app.db.models.exercises import Exercise
 from app.api.schemas.workouts import WorkoutCreate, WorkoutResponse
 
 workouts_router = APIRouter(tags=["Workouts"])
+
+@workouts_router.get("/workouts/today", response_model=List[WorkoutResponse])
+def get_todays_workouts(current_user=Depends(get_current_user)):
+    """Retrieve all workouts logged today for the authenticated user"""
+    """Fetch all workouts for a specific exercise by the authenticated user"""
+    with session_scope() as session:
+        # Get user ID as a string
+        db_user = session.query(User.id).filter_by(auth_id=current_user.id).scalar()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # ✅ Get current UTC date range
+        now_utc = datetime.now(timezone.utc)
+        today_start = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        all_workouts = session.query(Workout).all()
+
+        filtered_workouts = []
+        for workout in all_workouts:
+            workout_datetime = workout.date.replace(tzinfo=timezone.utc)
+            if(workout_datetime >= today_start):
+                filtered_workouts.append(workout)
+
+        # workout_responses = []
+        # for workout in filtered_workouts:
+            # exercise = session.query(Exercise).filter(Exercise.id == workout.exercise_id).first()
+            # print(exercise.muscle.name)
+
+        return [
+            WorkoutResponse(
+                id=workout.id,
+                exercise_id=workout.exercise_id,
+                reps=workout.reps,
+                weights=workout.weights,
+                date=workout.date
+            )
+            for workout in filtered_workouts
+        ]
+
 
 @workouts_router.get("/workouts/last-three", response_model=list[WorkoutResponse])
 def get_all_workouts_for_exercise(exercise_id: str, current_user=Depends(get_current_user)):

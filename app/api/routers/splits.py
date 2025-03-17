@@ -1,9 +1,10 @@
+from datetime import datetime, timezone
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends, Header
 from app.core.supabase import supabase_client
 from app.db.database import session_scope
-from app.db.models import Muscle, SplitMuscle, User
+from app.db.models import Muscle, SplitMuscle, User, Workout, Exercise
 from app.db.models.splits import Split
 from app.api.schemas.splits import SplitCreate, SplitResponse, MuscleResponse, SplitMuscleCreate, SplitMuscleResponse
 from uuid import uuid4
@@ -34,6 +35,23 @@ def get_splits(current_user=Depends(get_current_user)):
 
         splits = session.query(Split).filter(Split.user_id == db_user.id).all()
 
+        now_utc = datetime.now(timezone.utc)
+        today_start = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        all_workouts = session.query(Workout).all()
+
+        workouts_today = []
+        for workout in all_workouts:
+            workout_datetime = workout.date.replace(tzinfo=timezone.utc)
+            if workout_datetime >= today_start:
+                workouts_today.append(workout)
+
+        exercise_to_muscle = {
+            workout.exercise_id: session.query(Exercise).filter(
+                Exercise.id == workout.exercise_id).first().muscle_id
+            for workout in workouts_today
+        }
+
         return [
             SplitResponse(
                 id=split.id,
@@ -50,7 +68,9 @@ def get_splits(current_user=Depends(get_current_user)):
                         id=muscle.id,  # ✅ Directly return muscle ID
                         name=muscle.name,
                         pic=f"/uploads/muscles/{muscle.pic}" if muscle.pic else None,
-                        nr_of_exercises=sm.nr_of_exercises
+                        nr_of_exercises=sm.nr_of_exercises,
+                    nr_of_exercises_done_today=sum(
+                        1 for exercise_id in exercise_to_muscle if exercise_to_muscle[exercise_id] == muscle.id)
                     )
                     for sm in session.query(SplitMuscle).filter(SplitMuscle.split_id == split.id).all()
                     for muscle in session.query(Muscle).filter(Muscle.id == sm.muscle_id).all()

@@ -9,7 +9,7 @@ class Split(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    name = Column(String, unique=True, nullable=False)
+    name = Column(String, nullable=False)
     pic = Column(String, nullable=True)
 
     muscles = relationship("SplitMuscle", back_populates="split", cascade="all, delete-orphan")

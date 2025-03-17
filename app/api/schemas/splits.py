@@ -16,6 +16,8 @@ class SplitMuscleResponse(BaseModel):
     name: str
     pic: Optional[str]
     nr_of_exercises: int  # ✅ Now at the same level as muscle details
+    nr_of_exercises_done_today: int
+
 
 class SplitCreate(BaseModel):
     name: str
