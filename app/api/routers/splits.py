@@ -6,7 +6,8 @@ from app.core.supabase import supabase_client
 from app.db.database import session_scope
 from app.db.models import Muscle, SplitMuscle, User, Workout, Exercise
 from app.db.models.splits import Split
-from app.api.schemas.splits import SplitCreate, SplitResponse, MuscleResponse, SplitMuscleCreate, SplitMuscleResponse
+from app.api.schemas.splits import SplitCreate, SplitResponse, MuscleResponse, SplitMuscleCreate, SplitMuscleResponse, \
+    SplitMuscleResponse2, SplitResponse2
 from uuid import uuid4
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -69,7 +70,7 @@ def get_splits(current_user=Depends(get_current_user)):
                         name=muscle.name,
                         pic=f"/uploads/muscles/{muscle.pic}" if muscle.pic else None,
                         nr_of_exercises=sm.nr_of_exercises,
-                    nr_of_exercises_done_today=sum(
+                        nr_of_exercises_done_today=sum(
                         1 for exercise_id in exercise_to_muscle if exercise_to_muscle[exercise_id] == muscle.id)
                     )
                     for sm in session.query(SplitMuscle).filter(SplitMuscle.split_id == split.id).all()
@@ -79,7 +80,7 @@ def get_splits(current_user=Depends(get_current_user)):
         ]
 
 
-@splits_router.post("/splits", response_model=SplitResponse, status_code=201)
+@splits_router.post("/splits", response_model=SplitResponse2, status_code=201)
 def create_split(data: SplitCreate, current_user=Depends(get_current_user)):
     """Create a workout split for an authenticated user"""
     with session_scope() as session:
@@ -111,7 +112,7 @@ def create_split(data: SplitCreate, current_user=Depends(get_current_user)):
             session.add(split_muscle)
 
             return_muscles.append(  # ✅ Now returns expected structure
-                SplitMuscleResponse(
+                SplitMuscleResponse2(
                     id=muscle.id,
                     name=muscle.name,
                     pic=muscle.pic,
@@ -121,7 +122,7 @@ def create_split(data: SplitCreate, current_user=Depends(get_current_user)):
 
         session.commit()  # ✅ Finalizes changes
 
-        return SplitResponse(
+        return SplitResponse2(
             id=new_split.id,
             name=new_split.name,
             pic=new_split.pic,
