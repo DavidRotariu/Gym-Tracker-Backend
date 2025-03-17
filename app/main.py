@@ -17,6 +17,9 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000",
+                   "http://localhost:3001",
+                   "http://localhost:3002",
+                   "http://localhost:3003",
                    "https://gym-tracker-hempvie8u-davidrotarius-projects.vercel.app",
                    "https://gym-tracker-topaz.vercel.app"],  # Allow only your frontend domain
     allow_credentials=True,

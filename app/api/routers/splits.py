@@ -8,7 +8,7 @@ from app.db.models import Muscle, SplitMuscle, User, Workout, Exercise
 from app.db.models.splits import Split
 from app.api.schemas.splits import SplitCreate, SplitResponse, MuscleResponse, SplitMuscleCreate, SplitMuscleResponse, \
     SplitMuscleResponse2, SplitResponse2
-from uuid import uuid4
+from uuid import uuid4, UUID
 from sqlalchemy.exc import SQLAlchemyError
 
 splits_router = APIRouter(tags=["Splits"])
@@ -59,11 +59,15 @@ def get_splits(current_user=Depends(get_current_user)):
                 name=split.name,
                 pic=split.pic,
                 description=" / ".join(
-                    [muscle.name for muscle in session.query(Muscle)
+                    [
+                    muscle.name for muscle in session.query(Muscle)
                     .join(SplitMuscle, Muscle.id == SplitMuscle.muscle_id)
                     .filter(SplitMuscle.split_id == split.id)
-                    .all()]
-                ),  # ✅ Returns muscle names as "Chest / Shoulders / Triceps"
+                    .order_by(SplitMuscle.nr_of_exercises.desc())
+                    .limit(3)
+                    .all()
+                    ]
+                ),
                 muscles=[
                     SplitMuscleResponse(
                         id=muscle.id,  # ✅ Directly return muscle ID
@@ -129,3 +133,24 @@ def create_split(data: SplitCreate, current_user=Depends(get_current_user)):
             description=" / ".join([m.name for m in return_muscles]),  # ✅ Construct description
             muscles=return_muscles  # ✅ Return full muscle details
         )
+
+
+@splits_router.delete("/splits/{split_id}", status_code=204)
+def delete_split(split_id: UUID, current_user=Depends(get_current_user)):
+    """Delete a workout split for an authenticated user"""
+    with session_scope() as session:
+        db_user = session.query(User).filter_by(auth_id=current_user.id).first()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found in database")
+
+        split = session.query(Split).filter(Split.id == split_id, Split.user_id == db_user.id).first()
+        if not split:
+            raise HTTPException(status_code=404, detail="Split not found or unauthorized access")
+
+        # Delete related SplitMuscle entries first
+        session.query(SplitMuscle).filter(SplitMuscle.split_id == split_id).delete()
+
+        # Delete the split itself
+        session.delete(split)
+
+        return {"message": "Split deleted successfully"}
