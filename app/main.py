@@ -9,6 +9,7 @@ from app.api.routers.splits import splits_router
 from app.api.routers.users import users_router
 from app.api.routers.workout_sessions import workout_sessions_router
 from app.api.routers.workouts import workouts_router
+from app.api.routers.favourites import favorites_router
 
 app = FastAPI()
 
@@ -16,10 +17,11 @@ app = FastAPI()
 # Allow CORS for all origins, methods, and headers (Change for production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000",
-                   "http://localhost:3001",
-                   "http://localhost:3002",
-                   "http://localhost:3003",
+    allow_origins=["http://localhost:3000", "http://192.168.1.11:3000",
+                   "http://localhost:3001", "http://192.168.1.11:3001",
+                   "http://localhost:3002", "http://192.168.1.11:3002",
+                   "http://localhost:3003", "http://192.168.1.11:3003",
+                   "http://localhost:3004", "http://192.168.1.11:3004",
                    "https://gym-tracker-hempvie8u-davidrotarius-projects.vercel.app",
                    "https://gym-tracker-topaz.vercel.app"],  # Allow only your frontend domain
     allow_credentials=True,
@@ -38,6 +40,7 @@ app.include_router(workouts_router)
 app.include_router(workout_sessions_router)
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(favorites_router)
 
 @app.get("/")
 def health_check():

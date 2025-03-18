@@ -1,9 +1,11 @@
 from typing import List
 from uuid import uuid4, UUID
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
+
+from app.api.routers.splits import get_current_user
 from app.db.database import session_scope
-from app.db.models import Muscle
+from app.db.models import Muscle, User, UserFavoriteExercise
 from app.db.models.exercises import Exercise
 from app.db.models.exercise_secondary_muscles import ExerciseSecondaryMuscle
 from app.api.schemas.exercises import ExerciseCreate, ExerciseResponse, ExerciseBulkCreate
@@ -36,9 +38,14 @@ def get_exercises():
 
 
 @exercises_router.get("/exercises/by-muscle/{muscle_id}", response_model=List[ExerciseResponse])
-def get_exercises_by_primary_muscle(muscle_id: UUID):
-    """Fetch all exercises where the given muscle is the primary muscle"""
+def get_exercises_by_primary_muscle(muscle_id: UUID, current_user=Depends(get_current_user)):
+    """Fetch all splits for an authenticated user"""
     with session_scope() as session:
+        # ✅ Fetch user
+        db_user = session.query(User).filter_by(auth_id=current_user.id).first()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found in database")
+
         # ✅ Check if muscle exists
         muscle = session.query(Muscle).filter(Muscle.id == muscle_id).first()
         if not muscle:
@@ -47,6 +54,14 @@ def get_exercises_by_primary_muscle(muscle_id: UUID):
         # ✅ Fetch exercises with this muscle as primary
         exercises = session.query(Exercise).filter(Exercise.muscle_id == muscle_id).all()
 
+        # ✅ Get user's favorite exercise IDs
+        favorite_exercise_ids = {
+            fav.exercise_id for fav in session.query(UserFavoriteExercise).filter_by(user_id=db_user.id).all()
+        }
+
+        # ✅ Sort exercises: Favorites first
+        sorted_exercises = sorted(exercises, key=lambda x: x.id not in favorite_exercise_ids)
+
         return [
             ExerciseResponse(
                 id=exercise.id,
@@ -54,13 +69,13 @@ def get_exercises_by_primary_muscle(muscle_id: UUID):
                 pic=f"/uploads/exercises/{exercise.pic}" if exercise.pic else None,
                 tips=exercise.tips,
                 equipment=exercise.equipment,
-                favourite=exercise.favourite,
+                favourite=exercise.id in favorite_exercise_ids,  # ✅ Mark as favorite
                 primary_muscle=muscle.name,  # ✅ Return primary muscle name
                 secondary_muscles=[
                     session.query(Muscle.name).filter(Muscle.id == sm.muscle_id).scalar()
                     for sm in exercise.secondary_muscles
                 ]
-            ) for exercise in exercises
+            ) for exercise in sorted_exercises
         ]
 
 

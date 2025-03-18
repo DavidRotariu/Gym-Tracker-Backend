@@ -20,3 +20,4 @@ class Exercise(Base):
     muscle = relationship("Muscle", back_populates="exercises")
     workouts = relationship("Workout", back_populates="exercise", cascade="all, delete-orphan")
     secondary_muscles = relationship("ExerciseSecondaryMuscle", back_populates="exercise", cascade="all, delete-orphan")
+    favorited_by = relationship("UserFavoriteExercise", back_populates="exercise", cascade="all, delete-orphan")
