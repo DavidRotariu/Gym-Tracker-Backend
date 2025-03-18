@@ -54,7 +54,7 @@ def get_todays_workouts(current_user=Depends(get_current_user)):
         ]
 
 
-@workouts_router.get("/workouts/last-three", response_model=list[WorkoutResponse])
+@workouts_router.get("/workouts/by-exercise", response_model=list[WorkoutResponse])
 def get_all_workouts_for_exercise(exercise_id: str, current_user=Depends(get_current_user)):
     """Fetch all workouts for a specific exercise by the authenticated user"""
     with session_scope() as session:
@@ -77,7 +77,6 @@ def get_all_workouts_for_exercise(exercise_id: str, current_user=Depends(get_cur
             .filter(Workout.user_id == db_user_id)
             .filter(cast(Workout.exercise_id, String) == exercise_id)
             .order_by(desc(Workout.date))
-            .limit(3)
             .all()
         )
 
