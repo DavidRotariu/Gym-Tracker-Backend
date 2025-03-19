@@ -167,3 +167,21 @@ def create_workout(data: WorkoutCreate):
             weights=new_workout.weights,
             date=new_workout.date
         )
+
+
+@workouts_router.delete("/workouts", status_code=204)
+def delete_workout(workout_id: str, current_user=Depends(get_current_user)):
+    with session_scope() as session:
+        db_user = session.query(User.id).filter_by(auth_id=current_user.id).scalar()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        workout = session.query(Workout).filter_by(id=workout_id, user_id=db_user).first()
+        if not workout:
+            raise HTTPException(status_code=404, detail="Workout not found")
+
+        session.delete(workout)
+        session.commit()
+
+        return {"message": "Workout deleted successfully"}
+
