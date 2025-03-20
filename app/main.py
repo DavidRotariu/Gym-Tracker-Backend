@@ -22,6 +22,8 @@ app.add_middleware(
                    "http://localhost:3002", "http://192.168.1.11:3002",
                    "http://localhost:3003", "http://192.168.1.11:3003",
                    "http://localhost:3004", "http://192.168.1.11:3004",
+                   "http://10.11.8.231:3000"
+                   "http://10.11.8.231:3001",
                    "https://gym-tracker-hempvie8u-davidrotarius-projects.vercel.app",
                    "https://gym-tracker-topaz.vercel.app"],  # Allow only your frontend domain
     allow_credentials=True,
