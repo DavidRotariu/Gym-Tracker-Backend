@@ -6,7 +6,7 @@ from app.api.routers.auth import auth_router
 from app.api.routers.muscles import muscles_router
 from app.api.routers.exercises import exercises_router
 from app.api.routers.splits import splits_router
-from app.api.routers.users import users_router
+from app.api.routers.users import qrcode_router
 from app.api.routers.workout_sessions import workout_sessions_router
 from app.api.routers.workouts import workouts_router
 from app.api.routers.favourites import favorites_router
@@ -41,7 +41,7 @@ app.include_router(splits_router)
 app.include_router(workouts_router)
 app.include_router(workout_sessions_router)
 app.include_router(auth_router)
-app.include_router(users_router)
+app.include_router(qrcode_router)
 app.include_router(favorites_router)
 
 @app.get("/")
