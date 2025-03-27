@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends, Header
+from sqlalchemy import func
+
 from app.core.supabase import supabase_client
 from app.db.database import session_scope
 from app.db.models import Muscle, SplitMuscle, User, Workout, Exercise
@@ -34,55 +36,67 @@ def get_splits(current_user=Depends(get_current_user)):
         if not db_user:
             raise HTTPException(status_code=404, detail="User not found in database")
 
+        # Get all splits for the user
         splits = session.query(Split).filter(Split.user_id == db_user.id).all()
 
+        # Calculate today's start time in UTC
         now_utc = datetime.now(timezone.utc)
         today_start = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
 
-        all_workouts = session.query(Workout).all()
+        # Get exercise counts by muscle for today's workouts for THIS user
+        exercise_counts = {}
+        today_workouts = (session.query(Exercise.muscle_id, func.count(Workout.id).label('count'))
+                          .join(Workout, Workout.exercise_id == Exercise.id)
+                          .filter(Workout.user_id == db_user.id)  # Filter by the current user
+                          .filter(Workout.date >= today_start)
+                          .group_by(Exercise.muscle_id)
+                          .all())
 
-        workouts_today = []
-        for workout in all_workouts:
-            workout_datetime = workout.date.replace(tzinfo=timezone.utc)
-            if workout_datetime >= today_start:
-                workouts_today.append(workout)
+        for muscle_id, count in today_workouts:
+            exercise_counts[muscle_id] = count
 
-        exercise_to_muscle = {
-            workout.exercise_id: session.query(Exercise).filter(
-                Exercise.id == workout.exercise_id).first().muscle_id
-            for workout in workouts_today
-        }
+        result = []
 
-        return [
-            SplitResponse(
-                id=split.id,
-                name=split.name,
-                pic=split.pic,
-                description=" / ".join(
-                    [
-                    muscle.name for muscle in session.query(Muscle)
-                    .join(SplitMuscle, Muscle.id == SplitMuscle.muscle_id)
-                    .filter(SplitMuscle.split_id == split.id)
-                    .order_by(SplitMuscle.nr_of_exercises.desc())
-                    .limit(3)
-                    .all()
-                    ]
-                ),
-                muscles=[
+        for split in splits:
+            # Get top 3 muscles for this split for the description
+            top_muscles = (session.query(Muscle)
+                           .join(SplitMuscle, Muscle.id == SplitMuscle.muscle_id)
+                           .filter(SplitMuscle.split_id == split.id)
+                           .order_by(SplitMuscle.nr_of_exercises.desc())
+                           .limit(3)
+                           .all())
+
+            description = " / ".join([muscle.name for muscle in top_muscles])
+
+            # Get all muscles for this split in a single query
+            split_muscles = (session.query(SplitMuscle, Muscle)
+                             .join(Muscle, SplitMuscle.muscle_id == Muscle.id)
+                             .filter(SplitMuscle.split_id == split.id)
+                             .all())
+
+            muscles_data = []
+            for sm, muscle in split_muscles:
+                muscles_data.append(
                     SplitMuscleResponse(
-                        id=muscle.id,  # ✅ Directly return muscle ID
+                        id=muscle.id,
                         name=muscle.name,
                         pic=f"/uploads/muscles/{muscle.pic}" if muscle.pic else None,
                         nr_of_exercises=sm.nr_of_exercises,
-                        nr_of_exercises_done_today=sum(
-                        1 for exercise_id in exercise_to_muscle if exercise_to_muscle[exercise_id] == muscle.id)
+                        nr_of_exercises_done_today=exercise_counts.get(muscle.id, 0)
                     )
-                    for sm in session.query(SplitMuscle).filter(SplitMuscle.split_id == split.id).all()
-                    for muscle in session.query(Muscle).filter(Muscle.id == sm.muscle_id).all()
-                ]
-            ) for split in splits
-        ]
+                )
 
+            result.append(
+                SplitResponse(
+                    id=split.id,
+                    name=split.name,
+                    pic=split.pic,
+                    description=description,
+                    muscles=muscles_data
+                )
+            )
+
+        return result
 
 @splits_router.post("/splits", response_model=SplitResponse2, status_code=201)
 def create_split(data: SplitCreate, current_user=Depends(get_current_user)):
