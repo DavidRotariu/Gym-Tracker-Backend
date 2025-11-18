@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from contextlib import contextmanager
 
 # Initialize the database connection
-DATABASE_URL = "postgresql://postgres:David.j.r.3@db.iqkwhjgqohvsxfzzkokd.supabase.co:5432/postgres"
+DATABASE_URL = "postgresql://postgres:Vz0KFTYxhr4bN2td@db.ffcvexqfrsvmnsufoscv.supabase.co:5432/postgres"
 engine = create_engine(DATABASE_URL)
 
 try:
