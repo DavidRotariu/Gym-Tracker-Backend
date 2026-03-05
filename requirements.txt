@@ -21,3 +21,5 @@ uvicorn
 supabase
 
 python-multipart
+
+pytest

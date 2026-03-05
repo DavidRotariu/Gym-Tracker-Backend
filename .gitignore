@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env*
+
+# Virtual environment
+.venv/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Migrations
+migrations/__pycache__/
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Test outputs
+*.log
+
+# Supabase
+.supabase/
+
+# Byte-compiled files
+*.so
+
+# Jupyter
+*.ipynb_checkpoints
+
+# Ignore generated files
+*.sqlite3
+
+# Ignore local dev artifacts
+*.bak
+*.swp
+*.tmp
+
+# Ignore generated exercises
+uploads/generate exercises.py
+
+# Ignore exercises/muscles folders but keep .gitkeep
+uploads/exercises/*
+uploads/muscles/*
+!uploads/exercises/.gitkeep
+!uploads/muscles/.gitkeep
+.idea/misc.xml
+.idea/Gym-Tracker.iml

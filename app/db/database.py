@@ -1,16 +1,14 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from contextlib import contextmanager
 
 # Initialize the database connection
-DATABASE_URL = "postgresql://postgres:Vz0KFTYxhr4bN2td@db.ffcvexqfrsvmnsufoscv.supabase.co:5432/postgres"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:Vz0KFTYxhr4bN2td@db.ffcvexqfrsvmnsufoscv.supabase.co:5432/postgres",
+)
 engine = create_engine(DATABASE_URL)
-
-try:
-    with engine.connect() as conn:
-        print("✅ Database connection successful!")
-except Exception as e:
-    print("❌ Database connection failed:", e)
 
 # Base Model
 Base = declarative_base()
@@ -26,9 +24,6 @@ from app.db.models.split_muscle import SplitMuscle
 from app.db.models.workouts import Workout
 from app.db.models.workout_sessions import WorkoutSession
 from app.db.models.workout_session_muscle import WorkoutSessionMuscle
-
-# ✅ Create tables in the database
-Base.metadata.create_all(bind=engine)
 
 # ✅ Fix: Add session_scope to manage database transactions
 @contextmanager
