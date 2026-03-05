@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+import httpx
 
 from app.api.schemas.auth import UserResponse
 from app.core.supabase import supabase_client
@@ -10,7 +11,10 @@ class AuthService:
         self.repo = repo
 
     async def signup(self, email: str, password: str, name: str) -> UserResponse:
-        response = supabase_client.auth.sign_up({"email": email, "password": password})
+        try:
+            response = supabase_client.auth.sign_up({"email": email, "password": password})
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=503, detail=f"Supabase auth request failed: {type(exc).__name__}")
         if response.user is None:
             raise HTTPException(status_code=400, detail=response.error.message)
 
@@ -22,7 +26,10 @@ class AuthService:
         return UserResponse(id=user.id, email=user.email, name=user.name)
 
     async def login(self, email: str, password: str) -> dict:
-        response = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
+        try:
+            response = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=503, detail=f"Supabase auth request failed: {type(exc).__name__}")
         if response.user is None:
             raise HTTPException(status_code=400, detail=response.error.message)
         return {
@@ -32,7 +39,10 @@ class AuthService:
         }
 
     async def me(self, token: str) -> UserResponse:
-        user = supabase_client.auth.get_user(token)
+        try:
+            user = supabase_client.auth.get_user(token)
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=503, detail=f"Supabase auth request failed: {type(exc).__name__}")
         if user.user is None:
             raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -43,7 +53,10 @@ class AuthService:
         return UserResponse(id=db_user.id, email=db_user.email, name=db_user.name)
 
     async def logout(self, token: str) -> dict:
-        response = supabase_client.auth.sign_out(token)
+        try:
+            response = supabase_client.auth.sign_out(token)
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=503, detail=f"Supabase auth request failed: {type(exc).__name__}")
         if response and response.error:
             raise HTTPException(status_code=500, detail="Failed to log out")
         return {"message": "User logged out successfully"}

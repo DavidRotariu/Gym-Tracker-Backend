@@ -1,4 +1,5 @@
 from fastapi import Depends, Header, HTTPException
+import httpx
 from sqlalchemy.orm import Session
 
 from app.core.supabase import supabase_client
@@ -27,7 +28,10 @@ def get_current_user(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
 
     token = authorization.split(" ")[1]
-    user = supabase_client.auth.get_user(token)
+    try:
+        user = supabase_client.auth.get_user(token)
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=503, detail=f"Supabase auth request failed: {type(exc).__name__}")
 
     if user.user is None:
         raise HTTPException(status_code=401, detail="Invalid token")
